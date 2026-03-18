@@ -1,6 +1,6 @@
 cask "pomodorni" do
-  version "1.0.0"
-  sha256 "78dd3d65944b245b0b4293fe187ff27693951c5afea31c88551bb6c31601caf5"
+  version "1.0.1"
+  sha256 "2c19633667e39ba2af865ff3cd491afee877682b1525c7026f944c821805892b"
 
   url "https://github.com/ornitech/pomodorni/releases/download/v#{version}/Pomodorni.dmg"
   name "Pomodorni"
