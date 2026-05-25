@@ -1,0 +1,65 @@
+name: Update Formula
+
+on:
+  repository_dispatch:
+    types: [update-formula]
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update formula file
+        env:
+          NAME: ${{ github.event.client_payload.name }}
+          VERSION: ${{ github.event.client_payload.version }}
+          ARM_SHA: ${{ github.event.client_payload.arm_sha256 }}
+          INTEL_SHA: ${{ github.event.client_payload.intel_sha256 }}
+        run: |
+          FORMULA="Formula/${NAME}.rb"
+          if [ ! -f "$FORMULA" ]; then
+            echo "Formula not found: $FORMULA"
+            exit 1
+          fi
+
+          # Bump version
+          sed -i "s/^  version \".*\"/  version \"${VERSION}\"/" "$FORMULA"
+
+          # Replace arm sha (the sha256 line inside the on_arm block — first sha256 occurrence)
+          python3 - "$FORMULA" "$ARM_SHA" "$INTEL_SHA" <<'PY'
+          import re, sys, pathlib
+          path, arm, intel = sys.argv[1], sys.argv[2], sys.argv[3]
+          text = pathlib.Path(path).read_text()
+
+          def replace_block(text, block_name, new_sha):
+              pattern = re.compile(
+                  r'(on_' + block_name + r' do.*?sha256 ")[^"]*(")',
+                  re.DOTALL,
+              )
+              new_text, n = pattern.subn(r'\g<1>' + new_sha + r'\g<2>', text, count=1)
+              if n != 1:
+                  raise SystemExit(f"Failed to update sha256 in on_{block_name} block")
+              return new_text
+
+          text = replace_block(text, 'arm', arm)
+          text = replace_block(text, 'intel', intel)
+          pathlib.Path(path).write_text(text)
+          PY
+
+          echo "Updated $FORMULA to version ${VERSION}"
+          cat "$FORMULA"
+
+      - name: Commit and push
+        env:
+          NAME: ${{ github.event.client_payload.name }}
+          VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "Formula/${NAME}.rb"
+          git commit -m "chore: update ${NAME} to v${VERSION}"
+          git push
