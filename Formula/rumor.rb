@@ -1,17 +1,17 @@
 class Rumor < Formula
   desc "Multi-process TUI orchestrator"
   homepage "https://github.com/ornitech/rumor"
-  version "0.2.0"
+  version "0.3.0"
   license "MIT"
 
   on_macos do
     on_arm do
       url "https://github.com/ornitech/rumor/releases/download/v#{version}/rumor-aarch64-apple-darwin.tar.gz"
-      sha256 "9400335e2922cac54641df36f74701852914db5979b981f186f4fa8e98dda8ae"
+      sha256 "3b982b36f918cb15b23de9a80bea3fb7f1a744f6d89463b7b706afa0b0b8f4b6"
     end
     on_intel do
       url "https://github.com/ornitech/rumor/releases/download/v#{version}/rumor-x86_64-apple-darwin.tar.gz"
-      sha256 "0362d60c020b16c1d4d312062a17ae3ab9e8272c0c67dcd137372c839b561783"
+      sha256 "f852b5953a4be0037cd606e91d0988844d8e56f9af706400a372845d7641b8a1"
     end
   end
 
